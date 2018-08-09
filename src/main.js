@@ -7,10 +7,10 @@ import router from './router';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 // 引人css公共样式
-import './assets/css/index.css';
-Vue.config.productionTip = false;
+import '@/assets/css/index.css';
 // 注册插件
 Vue.use(ElementUI);
+Vue.config.productionTip = false;
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
