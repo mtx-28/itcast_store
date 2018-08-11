@@ -20,8 +20,8 @@
 </template>
 
 <script>
-// 导入axios
-import axios from 'axios';
+// // 导入axios
+// import axios from 'axios';
 export default {
   data() {
     return {
@@ -33,7 +33,7 @@ export default {
   },
   methods: {
     async handleLogin() {
-      var response = await axios.post('http://localhost:8888/api/private/v1/login', this.formData);
+      var response = await this.$http.post('login', this.formData);
       // var status = response.data.meta.status;
       // var msg = response.data.meta.msg;
       var { data: { meta: { status, msg } } } = response;

@@ -16,6 +16,7 @@
 			</el-row>
 		</el-header>
 		<el-container>
+			<!-- // 侧边栏 -->
 			<el-aside class="aside" width="200px">
 				<el-menu
           unique-opened
@@ -86,7 +87,10 @@
           </el-submenu>
         </el-menu>
 			</el-aside>
-			<el-main class="main">Main</el-main>
+			<!-- // 表格 -->
+			<el-main class="main">
+				<router-view></router-view>
+			</el-main>
 		</el-container>
   </el-container>
 </template>
@@ -94,13 +98,13 @@
 <script>
 export default {
 	beforeCreate() {
-		// 判断是否登录， token
-		var token = sessionStorage.getItem('token');
-		if(!token) {
-			// 提示
-			this.$message.warning('请先登录');
-			// 没有token跳转页面
-			this.$router.push('/login');
+	// 判断是否登录token
+	var token = sessionStorage.getItem('token');
+	if(!token) {
+    // 提示
+    this.$message.warning('请先登录');
+    // 没有token跳转页面
+    this.$router.push('/login');
 		}
 	},
 	methods: {
