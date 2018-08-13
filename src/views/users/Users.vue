@@ -60,6 +60,7 @@
 			  <template slot-scope="scope">
           <!-- {{ scope.row.mg_state }} -->
           <el-switch
+						@change="handleChange(scope.row)"
             v-model="scope.row.mg_state"
             active-color="#13ce66"
             inactive-color="#ff4949">
@@ -87,6 +88,7 @@
 						plain>
 					</el-button>
 					<el-button
+						@click="handleOpenSetRoleDialog(scope.row)"
 						type="success"
 						icon="el-icon-check"
 						size="mini"
@@ -120,10 +122,10 @@
         <el-form-item label="密码" prop="password">
           <el-input type="password" v-model="form.password" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="邮箱" prop="email">
+        <el-form-item label="邮箱">
           <el-input v-model="form.email" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="电话" prop="mobile">
+        <el-form-item label="电话">
           <el-input v-model="form.mobile" auto-complete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -156,6 +158,35 @@
         <el-button type="primary" @click="handleEdit">确 定</el-button>
       </div>
     </el-dialog>
+		<!-- 分配角色对话框 -->
+		<el-dialog
+      title="分配角色"
+      :visible.sync="setRoleDialogFormVisible">
+      <el-form
+        label-width="100px">
+        <el-form-item label="用户名">
+          {{ currentName }}
+        </el-form-item>
+        <el-form-item label="请选择角色">
+          <el-select v-model="currentRoleId">
+            <el-option label="请选择" :value="-1" disabled>
+						</el-option>
+						<el-option
+						v-for="item in roles"
+						:key="item.id"
+						:label="item.roleName"
+						:value="item.id"
+						>
+						</el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleSetRole">确 定</el-button>
+      </div>
+    </el-dialog>
+
 	</el-card>
 </template>
 
@@ -191,7 +222,16 @@ export default {
 			// 控制添加用户对话框的显示隐藏
 			addUserDialogFormVisible: false,
 			// 控制编辑用户对话框的显示隐藏
-			editUserDialogFormVisible: false
+			editUserDialogFormVisible: false,
+			// 控制角色分配的对话框显示隐藏
+			setRoleDialogFormVisible: false,
+			// 绑定下拉框需要的数据
+			currentName: '',
+			// 绑定下拉框
+			currentRoleId: -1,
+			currentUserId: -1,
+			// 角色列表
+			roles: []
 		};
 	},
 	created() {
@@ -244,10 +284,10 @@ export default {
 					// 重新加载数据
 					this.loadData();
 					// 还原表单默认值
-					this.$refs.addForm.resetFields();
-					// for (var key in this.form) {
-          // 	this.form[key] = '';
-        
+					// this.$refs.addForm.resetFields();
+					for (var key in this.form) {
+          	this.form[key] = '';
+					}
 				} else {
 					// 添加失败
 					this.$message.error(msg);
@@ -331,6 +371,42 @@ export default {
             message: '已取消删除'
           });  
 				});      
+			},
+			// 当用户状态改变时，修改用户的状态
+			async handleChange(user) {
+				const response = await this.$http.put(`users/${user.id}/state/${user.mg_state}`);
+				const { meta: { status, msg } } = response.data;
+				if(status === 200) {
+					this.$message.success(msg);
+				} else {
+					this.$message.error(msg);
+				}
+			},
+			// 点击按钮分配角色的对话框
+			async handleOpenSetRoleDialog(user) {
+				this.setRoleDialogFormVisible = true;
+				// 获取用户名和id
+				this.currentName = user.username;
+				this.currentUserId = user.id;
+				// 显示角色列表下拉框
+				const response = await this.$http.get('roles');
+				this.roles = response.data.data;
+				const userResponse =  await this.$http.get(`users/${user.id}`);
+				this.currentRoleId = userResponse.data.data.rid;
+			},
+			// 点击分配角色对话框上的确定按钮发送请求
+			async handleSetRole() {
+				const response = await this.$http.put(`users/${this.currentUserId}/role`, {
+					rid: this.currentRoleId
+				});
+				const { meta: { status, msg } } = response.data;
+				if(status === 200) {
+					this.$message.success(msg);
+					// 关闭对话框
+					this.setRoleDialogFormVisible = false;
+				} else {
+					this.$message.error(msg);
+				}
 			}
 	}
 };
